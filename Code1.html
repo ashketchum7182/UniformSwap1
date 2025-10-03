@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Uniform Swap Exchange</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind to use Inter font and enable responsive design -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#2563eb', // Blue-700
+                        'secondary': '#f97316', // Orange-500
+                        'accent': '#10b981', // Emerald-500
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; /* gray-300 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; /* gray-400 */ }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen p-4 sm:p-8">
+
+    <div id="app" class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-primary mb-2">Uniform Swap Exchange</h1>
+            <p class="text-xl text-gray-600">Find the uniform size you need and list what you want to swap!</p>
+        </header>
+
+        <!-- User/Auth Status and Loading Indicator -->
+        <div id="status-container" class="mb-6 p-4 bg-white rounded-xl shadow-lg border-l-4 border-accent">
+            <p class="text-sm font-semibold text-gray-700">
+                Status: <span id="auth-status" class="text-accent">Loading...</span>
+            </p>
+            <p id="user-id-display" class="text-xs text-gray-500 mt-1 break-all"></p>
+        </div>
+
+        <!-- Add Swap Form -->
+        <section class="mb-10 p-6 bg-white rounded-xl shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Post a New Swap Request (Max 5 per user)</h2>
+            <form id="swap-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Your Name (Spans 2 columns) -->
+                <div class="md:col-span-2">
+                    <label for="userName" class="block text-sm font-medium text-gray-700">Your Name</label>
+                    <input type="text" id="userName" required placeholder="Full Name" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                </div>
+
+                <!-- PRN (11 Digits) -->
+                <div>
+                    <label for="prn" class="block text-sm font-medium text-gray-700">PRN (11 Digits)</label>
+                    <input type="text" id="prn" required placeholder="Enter your 11-digit PRN" maxlength="11" pattern="\d{11}" title="PRN must be exactly 11 digits" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                </div>
+
+                <!-- Phone Number (Contact) -->
+                <div>
+                    <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Phone Number (Contact)</label>
+                    <input type="tel" id="phoneNumber" required placeholder="10 Digits" pattern="[0-9]{10}" title="Phone number must be exactly 10 digits" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                </div>
+
+                <!-- UPDATED: Branch (Select dropdown) -->
+                <div>
+                    <label for="branch" class="block text-sm font-medium text-gray-700">Branch</label>
+                    <select id="branch" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                        <option value="">Select Branch</option>
+                        <option value="AIML">AIML</option>
+                        <option value="ENTC">ENTC</option>
+                        <option value="RA">RA</option>
+                        <option value="CIVIL">CIVIL</option>
+                        <option value="MECHANICAL">MECHANICAL</option>
+                        <option value="CSE 🤮">CSE 🤮</option>
+                    </select>
+                </div>
+
+                <!-- Year -->
+                <div>
+                    <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+                    <select id="year" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                        <option value="">Select Year/Grade</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <!-- NEW: Gender -->
+                <div>
+                    <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                    <select id="gender" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                
+                <hr class="md:col-span-2 border-gray-200 my-2">
+
+                <!-- I HAVE (Item) -->
+                <div>
+                    <label for="hasItem" class="block text-sm font-medium text-gray-700">I HAVE (Item)</label>
+                    <select id="hasItem" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                        <option value="">Select Uniform Item</option>
+                        <option value="Shirt">Shirt</option>
+                        <option value="Pant">Pant</option>
+                        <option value="Blazer">Blazer</option>
+                    </select>
+                </div>
+
+                <!-- I HAVE (Size) -->
+                <div>
+                    <label for="hasSize" class="block text-sm font-medium text-gray-700">I HAVE (Size)</label>
+                    <select id="hasSize" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                        <option value="">Select Size</option>
+                        <option value="28">28</option>
+                        <option value="30">30</option>
+                        <option value="32">32</option>
+                        <option value="34">34</option>
+                        <option value="36">36</option>
+                        <option value="38">38</option>
+                        <option value="40">40</option>
+                        <option value="42">42</option>
+                        <option value="44">44</option>
+                        <option value="46">46</option>
+                    </select>
+                </div>
+
+                <!-- I WANT (Item) -->
+                <div>
+                    <label for="wantsItem" class="block text-sm font-medium text-gray-700">I WANT (Item)</label>
+                    <select id="wantsItem" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                        <option value="">Select Uniform Item</option>
+                        <option value="Shirt">Shirt</option>
+                        <option value="Pant">Pant</option>
+                        <option value="Blazer">Blazer</option>
+                    </select>
+                </div>
+
+                <!-- I WANT (Size) -->
+                <div>
+                    <label for="wantsSize" class="block text-sm font-medium text-gray-700">I WANT (Size)</label>
+                    <select id="wantsSize" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border">
+                        <option value="">Select Size</option>
+                        <option value="28">28</option>
+                        <option value="30">30</option>
+                        <option value="32">32</option>
+                        <option value="34">34</option>
+                        <option value="36">36</option>
+                        <option value="38">38</option>
+                        <option value="40">40</option>
+                        <option value="42">42</option>
+                        <option value="44">44</option>
+                        <option value="46">46</option>
+                    </select>
+                </div>
+
+                <!-- Contact Method (Simplified) - KEPT -->
+                <div class="md:col-span-2">
+                    <label for="contactNote" class="block text-sm font-medium text-gray-700">A short message (Optional)</label>
+                    <textarea id="contactNote" rows="2" placeholder="E.g., 'Good condition, needs minor mend.'" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-gray-50 border"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="md:col-span-2">
+                    <button type="submit" id="submit-button" class="w-full bg-accent text-white py-3 px-4 rounded-xl font-bold hover:bg-emerald-600 transition duration-300 shadow-lg shadow-accent/50 disabled:opacity-50" disabled>
+                        Post Swap Request
+                    </button>
+                    <p id="form-message" class="text-sm mt-2 text-center text-red-500 hidden"></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- Available Swaps List -->
+        <section class="p-6 bg-white rounded-xl shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Available Swap Listings</h2>
+            <div id="swap-list" class="space-y-4">
+                <div id="loading-spinner" class="text-center text-gray-500 p-4">
+                    <svg class="animate-spin h-6 w-6 text-primary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-2">Loading swaps...</p>
+                </div>
+                <!-- Listings will be injected here -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel, deleteDoc, doc, where, getDocs 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase instances
+        let app;
+        let db;
+        let auth;
+        let currentUserId = null;
+        let appId = null;
+
+        // --- Utility Functions ---
+
+        /**
+         * 1. Safely retrieve global configuration variables (MODIFIED FOR EXTERNAL DEPLOYMENT)
+         * * This function now contains your permanent Firebase credentials.
+         */
+        function getGlobalConfig() {
+            // Check for Canvas environment variables first (allows immediate testing here)
+            if (typeof __app_id !== 'undefined') {
+                try {
+                    return {
+                        appId: __app_id,
+                        firebaseConfig: JSON.parse(__firebase_config),
+                        authToken: __initial_auth_token
+                    };
+                } catch (error) {
+                    console.error("Error reading Canvas Firebase configs:", error);
+                    return { firebaseConfig: null };
+                }
+            }
+
+            // --- EXTERNAL DEPLOYMENT CONFIGURATION (YOUR LIVE KEYS) ---
+            // NOTE: These keys are now hardcoded and ready for deployment.
+            const YOUR_FIREBASE_CONFIG = {
+                apiKey: "AIzaSyBGcD_z3UUjcmqARQ79CJSgKWRScWhBjIc",
+                authDomain: "uniform-swapping1.firebaseapp.com",
+                projectId: "uniform-swapping1",
+                storageBucket: "uniform-swapping1.firebasestorage.app",
+                messagingSenderId: "503287155111",
+                appId: "1:503287155111:web:1ef1eb3b4849b55641ce82"
+            };
+
+            return {
+                // Use a simple, constant app ID for external deployment collection path
+                appId: "uniform-swap-external",
+                firebaseConfig: YOUR_FIREBASE_CONFIG,
+                // Auth token is not used for external deployment (Anonymous sign-in below handles it)
+                authToken: null, 
+            };
+        }
+
+        // 2. Format Firestore Timestamp
+        function formatTimestamp(timestamp) {
+            if (timestamp && timestamp.seconds) {
+                return new Date(timestamp.seconds * 1000).toLocaleString();
+            }
+            return 'Date Unknown';
+        }
+
+        // 3. Render a single swap listing card
+        // Added currentUserGender parameter for contact visibility logic
+        function renderListing(data, docId, currentUserGender) {
+            const isUserListing = currentUserId && data.userId === currentUserId;
+            
+            // Contact is visible if it's the user's own listing OR if genders match.
+            const canSeeContact = isUserListing || (currentUserGender && currentUserGender === data.gender);
+            
+            // Contact details to show/hide
+            const contactInfo = canSeeContact ? 
+                `<span class="text-xs font-mono text-gray-400">PRN: ${data.prn || 'N/A'}</span>
+                 <span class="text-sm font-semibold text-primary/80 ml-4">📞 ${data.phoneNumber || 'N/A'}</span>`
+                :
+                `<span class="text-sm font-semibold text-red-500">Contact Restricted (Gender Mismatch)</span>`;
+
+
+            return `
+                <div id="swap-${docId}" class="p-5 bg-gray-50 border border-gray-200 rounded-xl shadow-md transition duration-300 hover:shadow-lg relative">
+                    
+                    <!-- Contact Info Bar -->
+                    <div class="mb-4 pb-2 border-b border-gray-200 text-sm flex flex-wrap items-center">
+                        <span class="font-bold text-gray-800">${data.userName || 'Unknown User'}</span> 
+                        <span class="text-gray-500 ml-2">| ${data.branch || 'Unknown Branch'} (${data.year || 'Unknown Year'})</span>
+                        <span class="text-xs font-semibold text-gray-600 ml-2">(${data.gender || 'N/A'})</span>
+                        <div class="w-full mt-1 sm:w-auto sm:mt-0 sm:ml-4">
+                            ${contactInfo}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Left Side: I HAVE -->
+                        <div class="border-r border-gray-300 pr-4">
+                            <h3 class="text-lg font-bold text-accent mb-2">I HAVE</h3>
+                            <p class="text-2xl font-extrabold text-gray-900">${data.hasSize}</p>
+                            <p class="text-sm text-gray-600">${data.hasItem}</p>
+                        </div>
+                        <!-- Right Side: I WANT -->
+                        <div class="pl-4">
+                            <h3 class="text-lg font-bold text-secondary mb-2">I WANT</h3>
+                            <p class="text-2xl font-extrabold text-gray-900">${data.wantsSize}</p>
+                            <p class="text-sm text-gray-600">${data.wantsItem}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-gray-100">
+                        <p class="text-sm text-gray-700">
+                            <span class="font-semibold">Note:</span> ${data.contactNote || 'No extra notes provided.'}
+                        </p>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Contact ID: 
+                            <span class="font-mono text-xs text-primary bg-primary/10 px-1 py-0.5 rounded">${data.userId}</span>
+                            ${isUserListing ? '<span class="text-red-500 font-bold ml-2">(This is yours!)</span>' : ''}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Listed: ${formatTimestamp(data.timestamp)}
+                        </p>
+                    </div>
+                    
+                    ${isUserListing ? 
+                        `<button onclick="document.deleteSwap('${docId}')" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition duration-150 p-1 rounded-full bg-white/50" title="Delete this listing">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 10-2 0v6a1 1 0 102 0V8z" clip-rule="evenodd" />
+                            </svg>
+                        </button>` 
+                        : ''}
+                </div>
+            `;
+        }
+
+        // --- Firebase Core Functions ---
+
+        async function initializeFirebase() {
+            const config = getGlobalConfig();
+            appId = config.appId;
+            const firebaseConfig = config.firebaseConfig;
+            const authToken = config.authToken;
+            
+            if (!firebaseConfig) {
+                document.getElementById('auth-status').textContent = 'Error: Firebase config missing.';
+                return;
+            }
+
+            try {
+                setLogLevel('Debug');
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                const statusEl = document.getElementById('auth-status');
+                const userIdEl = document.getElementById('user-id-display');
+                const submitBtn = document.getElementById('submit-button');
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        statusEl.textContent = 'Ready (Signed In)';
+                        statusEl.classList.add('text-accent');
+                        userIdEl.textContent = `Your ID (for communication): ${currentUserId}`;
+                        submitBtn.disabled = false;
+                        startRealtimeListener();
+                    } else {
+                        // --- AUTH LOGIC FOR EXTERNAL DEPLOYMENT ---
+                        // Only sign in with custom token if available (in this Canvas environment)
+                        if (authToken) {
+                            await signInWithCustomToken(auth, authToken);
+                        } else {
+                            // Otherwise, sign in anonymously for external deployment
+                            await signInAnonymously(auth);
+                        }
+                        // --- END AUTH LOGIC ---
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                document.getElementById('auth-status').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function getCollectionPath() {
+            // Public collection path for shared, multi-user data
+            return `artifacts/${appId}/public/data/uniform_swaps`;
+        }
+
+        function startRealtimeListener() {
+            const swapListEl = document.getElementById('swap-list');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            loadingSpinner.classList.remove('hidden');
+
+            const q = query(collection(db, getCollectionPath()));
+
+            onSnapshot(q, (snapshot) => {
+                loadingSpinner.classList.add('hidden');
+                let html = '';
+                const swaps = [];
+                let currentUserGender = null; // Variable to store the current user's gender
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    swaps.push({ id: doc.id, ...data });
+
+                    // Find the current user's gender from their own listing(s)
+                    if (currentUserId && data.userId === currentUserId && !currentUserGender) {
+                        currentUserGender = data.gender;
+                    }
+                });
+                
+                // Sort by timestamp descending (newest first)
+                swaps.sort((a, b) => {
+                    const timeA = a.timestamp?.seconds || 0;
+                    const timeB = b.timestamp?.seconds || 0;
+                    return timeB - timeA;
+                });
+
+                swaps.forEach(swap => {
+                    // Pass the derived user gender to the rendering function
+                    html += renderListing(swap, swap.id, currentUserGender);
+                });
+
+                swapListEl.innerHTML = html || '<p class="text-center text-gray-500 p-8 bg-gray-100 rounded-lg">No swap requests have been posted yet. Be the first!</p>';
+
+            }, (error) => {
+                console.error("Error listening to swaps:", error);
+                swapListEl.innerHTML = `<p class="text-center text-red-500 p-4">Error fetching data: ${error.message}</p>`;
+                loadingSpinner.classList.add('hidden');
+            });
+        }
+
+
+        // --- Event Handlers & Exposed Functions ---
+
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+
+        document.getElementById('swap-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = document.getElementById('submit-button');
+            const messageEl = document.getElementById('form-message');
+
+            if (!currentUserId) {
+                messageEl.textContent = "Please wait for authentication to complete.";
+                messageEl.classList.remove('hidden');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            messageEl.classList.add('hidden');
+            messageEl.textContent = '';
+            
+            // PRN Validation Check (must be 11 digits)
+            const prnValue = form.prn.value.trim();
+            if (prnValue.length !== 11 || !/^\d+$/.test(prnValue)) {
+                messageEl.textContent = "PRN must be exactly 11 digits and contain only numbers.";
+                messageEl.classList.remove('text-accent');
+                messageEl.classList.add('text-red-500');
+                messageEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // Phone Number Validation Check (must be 10 digits)
+            const phoneValue = form.phoneNumber.value.trim();
+            if (phoneValue.length !== 10 || !/^\d{10}$/.test(phoneValue)) {
+                messageEl.textContent = "Phone Number must be exactly 10 digits and contain only numbers.";
+                messageEl.classList.remove('text-accent');
+                messageEl.classList.add('text-red-500');
+                messageEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                return;
+            }
+
+            try {
+                // --- SPAM PREVENTION CHECK ---
+                const swapsCollection = collection(db, getCollectionPath());
+                const userSwapsQuery = query(
+                    swapsCollection,
+                    where("userId", "==", currentUserId)
+                );
+                
+                // Fetch the documents to count them
+                const userSwapsSnapshot = await getDocs(userSwapsQuery);
+                const maxRequests = 5;
+
+                if (userSwapsSnapshot.size >= maxRequests) {
+                    messageEl.textContent = `Submission failed: You have reached the maximum limit of ${maxRequests} active swap requests. Please delete an existing request before posting a new one.`;
+                    messageEl.classList.remove('text-accent');
+                    messageEl.classList.add('text-red-500');
+                    messageEl.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    return; // Stop submission
+                }
+                // --- END SPAM PREVENTION CHECK ---
+                
+                // Proceed with submission if under limit
+                const newSwap = {
+                    userId: currentUserId,
+                    // CONTACT FIELDS
+                    userName: form.userName.value.trim(),
+                    prn: prnValue,
+                    phoneNumber: phoneValue,
+                    branch: form.branch.value,
+                    year: form.year.value,
+                    gender: form.gender.value,
+                    
+                    // SWAP FIELDS
+                    hasItem: form.hasItem.value,
+                    hasSize: form.hasSize.value,
+                    wantsItem: form.wantsItem.value,
+                    wantsSize: form.wantsSize.value,
+                    contactNote: form.contactNote.value.trim() || '',
+                    timestamp: serverTimestamp() // Use Firestore's server timestamp
+                };
+
+                await addDoc(swapsCollection, newSwap);
+                
+                // Success feedback and form reset
+                messageEl.textContent = 'Swap request posted successfully!';
+                messageEl.classList.remove('text-red-500');
+                messageEl.classList.add('text-accent');
+                messageEl.classList.remove('hidden');
+                form.reset();
+                
+                // Hide success message after a few seconds
+                setTimeout(() => messageEl.classList.add('hidden'), 5000);
+
+            } catch (error) {
+                console.error("Error posting swap:", error);
+                messageEl.textContent = `Error posting request: ${error.message}`;
+                messageEl.classList.remove('text-accent');
+                messageEl.classList.add('text-red-500');
+                messageEl.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Function exposed to the window for the delete button (since it's in the dynamically generated HTML)
+        document.deleteSwap = async (docId) => {
+            if (!currentUserId) {
+                console.error("Cannot delete: User not authenticated.");
+                return;
+            }
+            
+            // Simple visual feedback without using alert/confirm
+            const listingElement = document.getElementById(`swap-${docId}`);
+            if (listingElement) {
+                // Change style to indicate pending deletion
+                listingElement.style.opacity = '0.5'; 
+            }
+
+            try {
+                const docRef = doc(db, getCollectionPath(), docId);
+                // The database security rules will ensure only the correct user can delete it
+                await deleteDoc(docRef);
+                // onSnapshot will handle the UI update automatically
+            } catch (error) {
+                console.error("Error deleting swap:", error);
+                if (listingElement) {
+                    listingElement.style.opacity = '1'; // Revert on failure
+                }
+                // Notify user via console
+                console.log("Deletion failed. You might not have permission.");
+            }
+        };
+
+        // Initialize Firebase on load
+        initializeFirebase();
+    </script>
+</body>
+</html>
